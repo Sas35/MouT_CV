@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/viewCurrentTrackPanel"
+        android:layout_width="0dp"
+        android:layout_height="220dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="12dp"
+        app:cardCornerRadius="10dp"
+        app:cardBackgroundColor="@color/colorWhite"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/distanceVal"
+                android:layout_width="wrap_content"
+                android:layout_height="65dp"
+                android:layout_marginTop="40dp"
+                android:fontFamily="sans-serif-condensed-medium"
+                android:text="@string/distance_empty_example"
+                android:textAlignment="center"
+                android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+                android:textColor="@color/colorDark"
+                android:textSize="56sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/distancePic"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_marginBottom="50dp"
+                android:background="@drawable/ic_distance"
+                android:contentDescription="@string/picture"
+                app:layout_constraintBottom_toBottomOf="@+id/distanceVal"
+                app:layout_constraintStart_toStartOf="@+id/distanceVal" />
+
+            <TextView
+                android:id="@+id/distanceTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:fontFamily="sans-serif-light"
+                android:text="@string/distance_label"
+                android:textColor="#777777"
+                android:textSize="14sp"
+                app:layout_constraintBottom_toBottomOf="@+id/distancePic"
+                app:layout_constraintStart_toEndOf="@+id/distancePic"
+                app:layout_constraintTop_toTopOf="@+id/distancePic" />
+
+            <TextView
+                android:id="@+id/timeVal"
+                android:layout_width="wrap_content"
+                android:layout_height="45dp"
+                android:layout_marginStart="32dp"
+                android:fontFamily="sans-serif-condensed-medium"
+                android:text="@string/time_empty_example"
+                android:textAlignment="center"
+                android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+                android:textColor="@color/colorDark"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/speedVal"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/distanceVal"
+                app:layout_constraintVertical_bias="0.42" />
+
+            <TextView
+                android:id="@+id/speedVal"
+                android:layout_width="wrap_content"
+                android:layout_height="45dp"
+                android:layout_marginEnd="66dp"
+                android:fontFamily="sans-serif-condensed-medium"
+                android:text="@string/speed_empty_example"
+                android:textAlignment="center"
+                android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+                android:textColor="@color/colorDark"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/distanceVal"
+                app:layout_constraintVertical_bias="0.42" />
+
+            <TextView
+                android:id="@+id/speedTitle2"
+                android:layout_width="30dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_marginBottom="6dp"
+                android:fontFamily="sans-serif-light"
+                android:text="@string/speed_CI"
+                android:textColor="#777777"
+                android:textSize="12sp"
+                app:layout_constraintBottom_toBottomOf="@+id/speedVal"
+                app:layout_constraintStart_toEndOf="@+id/speedVal" />
+
+            <ImageButton
+                android:id="@+id/buttonPause"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/ic_pause_track"
+                android:contentDescription="@string/pause_button"
+                android:onClick="clickPauseTrackButton"
+                app:layout_constraintBottom_toBottomOf="@+id/distanceVal"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/distanceVal" />
+
+            <ImageButton
+                android:id="@+id/buttonStop"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/ic_stop_track"
+                android:contentDescription="@string/stop_button"
+                android:onClick="clickStopTrackButton"
+                app:layout_constraintBottom_toBottomOf="@+id/distanceVal"
+                app:layout_constraintEnd_toStartOf="@+id/distanceVal"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <ImageButton
+                android:id="@+id/buttonPlay"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"
+                android:background="@drawable/ic_play_track"
+                android:contentDescription="@string/play_button"
+                android:onClick="clickStartTrackButton"
+                app:layout_constraintBottom_toBottomOf="@+id/distanceVal"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/distanceVal" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.cardview.widget.CardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

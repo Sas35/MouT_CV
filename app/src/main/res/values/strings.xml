@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name">MouT CV</string>
+    <string name="completedTracks_button">Completed tracks button</string>
+    <string name="pause_button">Pause button</string>
+    <string name="stop_button">Stop button</string>
+    <string name="play_button">Play button</string>
+    <string name="back_button">Back button</string>
+    <string name="statistics_button">Statistics button</string>
+    <string name="currentPosition_button">Current position button</string>
+    <string name="userProfile_button">User profile button</string>
+    <string name="picture">Picture</string>
+    <string name="distance_km_label">km</string>
+    <string name="time_label">Time</string>
+    <string name="speed_label">Speed</string>
+    <string name="speed_CI">km/h</string>
+    <string name="distance_label">Km</string>
+    <string name="distance_empty_example">21.42</string>
+    <string name="speed_empty_example">15.32</string>
+    <string name="date_empty_example">15 July - 16:20</string>
+    <string name="time_empty_example">00:21:10</string>
+    <string name="stopTrackDialogMessage">Do you want to complete the training?</string>
+    <string name="stopTrackDialogPositiveButton">Resume</string>
+    <string name="stopTrackDialogNegativeButton">Complete</string>
+    <string name="completedTracks">Completed trainings</string>
+    <string name="password">Password</string>
+    <string name="email">Email</string>
+    <string name="sign_in">Sign in</string>
+    <string name="sign_up">Sign up</string>
+    <string name="first_name">First name</string>
+    <string name="google_maps_key">AIzaSyB41m291sjiouoPpLkGqrV6yWJnUXWWs3c</string>
+    <string name="google_maps_static_key">AIzaSyB41m291sjiouoPpLkGqrV6yWJnUXWWs3c</string>
+</resources>

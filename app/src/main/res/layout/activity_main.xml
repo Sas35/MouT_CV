@@ -17,6 +17,12 @@
         tools:layout_editor_absoluteX="84dp"
         tools:layout_editor_absoluteY="0dp" />
 
+    <fragment android:id="@+id/autocomplete_fragment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:name="com.google.android.libraries.places.widget.AutocompleteSupportFragment"
+        />
+
     <ImageButton
         android:layout_gravity="right"
         android:id="@+id/currentPositionButton"
@@ -62,7 +68,7 @@
         android:id="@+id/pager"
         android:layout_width="match_parent"
         android:layout_height="@dimen/anchor_point"
-        android:background="@color/colorAccent"
+        android:background="@color/transparent"
         app:layout_behavior="@string/BackDropBottomSheetBehavior"
         android:fitsSystemWindows="true">
     </androidx.viewpager.widget.ViewPager>

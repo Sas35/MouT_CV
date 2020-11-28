@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:paddingBottom="16dp"
+    android:id="@+id/main_sheet_content"
     android:background="@android:color/white">
 
     <RelativeLayout
@@ -136,7 +137,6 @@
                 android:layout_alignParentBottom="true"/>
         </RelativeLayout>
     </LinearLayout>
-
 
     <RelativeLayout
         android:layout_width="match_parent"

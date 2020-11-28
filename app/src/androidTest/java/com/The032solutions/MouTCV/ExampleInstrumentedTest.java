@@ -23,6 +23,6 @@ public class ExampleInstrumentedTest {
         Context appContext = InstrumentationRegistry.getTargetContext();
 
         assertEquals("Equals package name",
-                "com.triple.mouTCV", appContext.getPackageName());
+                "com.The032solutions.MouTCV", appContext.getPackageName());
     }
 }

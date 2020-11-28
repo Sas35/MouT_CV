@@ -1,26 +1,36 @@
 package com.The032solutions.MouTCV.Activity.Main;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.solver.widgets.analyzer.Direct;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.viewpager.widget.ViewPager;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.Html;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.MotionEvent;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.view.View;
@@ -28,6 +38,16 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 
+import com.The032solutions.MouTCV.Activity.FetchURL;
+import com.The032solutions.MouTCV.Activity.TaskLoadedCallback;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnMapLoadedCallback;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -35,6 +55,19 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.PhotoMetadata;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.net.FetchPhotoRequest;
+import com.google.android.libraries.places.api.net.FetchPlaceRequest;
+import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.libraries.places.widget.Autocomplete;
+import com.google.android.libraries.places.widget.AutocompleteActivity;
+import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
+import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 import com.mahc.custombottomsheetbehavior.BottomSheetBehaviorGoogleMapsLike;
 import com.mahc.custombottomsheetbehavior.MergedAppBarLayout;
 import com.mahc.custombottomsheetbehavior.MergedAppBarLayoutBehavior;
@@ -45,12 +78,20 @@ import com.The032solutions.MouTCV.CurrentUser.CurrentUserData;
 import com.The032solutions.MouTCV.R;
 import com.The032solutions.MouTCV.Services.GoogleMapUtils;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import static com.The032solutions.MouTCV.R.drawable.ic_go_forward;
+
 public class MainActivity extends AppCompatActivity
-        implements OnMapReadyCallback, OnMapLoadedCallback, LocationListener {
+        implements OnMapReadyCallback, OnMapLoadedCallback, LocationListener, TaskLoadedCallback {
 
     private GoogleMap map;
     private ProgressDialog loadMapProgressDialog;
@@ -68,6 +109,12 @@ public class MainActivity extends AppCompatActivity
     };
 
     TextView bottomSheetTextView;
+
+    PlacesClient placesClient;
+
+    ItemPagerAdapter adapter;
+    Polyline currentPolyline;
+    LatLng myLatLng;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -138,12 +185,200 @@ public class MainActivity extends AppCompatActivity
         });
 
         bottomSheetTextView = (TextView) bottomSheet.findViewById(R.id.bottom_sheet_title);
-        ItemPagerAdapter adapter = new ItemPagerAdapter(this,mDrawables);
+        adapter = new ItemPagerAdapter(this,mDrawables);
         ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
         viewPager.setAdapter(adapter);
 
         behavior.setState(BottomSheetBehaviorGoogleMapsLike.STATE_ANCHOR_POINT);
         //behavior.setCollapsible(false);
+
+        // PLACES
+
+        // Initialize the SDK
+        Places.initialize(getApplicationContext(), getResources().getString(R.string.google_maps_static_key));
+
+        // Create a new PlacesClient instance
+        placesClient = Places.createClient(this);
+
+        // Initialize the AutocompleteSupportFragment.
+        AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment)
+                getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
+
+        // Specify the types of place data to return.
+        autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME));
+
+        // Set up a PlaceSelectionListener to handle the response.
+        autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(@NonNull Place place) {
+                // TODO: Get info about the selected place.
+                Log.i("PLACE", "Place: " + place.getName() + ", " + place.getId());
+
+                String url = "";
+
+                if(myLatLng != null) {
+                    url = "https://maps.googleapis.com/maps/api/directions/json?\n" +
+                            "origin=" + myLatLng.latitude + "," + myLatLng.longitude +
+                            "&destination=place_id:" + place.getId() + "\n" +
+                            "&mode=bicycling&language=es&key=" + getString(R.string.google_maps_key);
+/*                    url = "https://maps.googleapis.com/maps/api/directions/json?\n" +
+                            "origin=39.477684,-0.346078&destination=39.475951,-0.346827\n" +
+                            "&mode=bicycling&key=" + getString(R.string.google_maps_key);*/
+
+                    FetchURL fetchURL = new FetchURL(MainActivity.this);
+                    fetchURL.execute(url, "bicycling");
+
+                    // Instantiate the RequestQueue.
+                    RequestQueue queue = Volley.newRequestQueue(MainActivity.this);
+
+                    // Request a string response from the provided URL.
+                    StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                            new Response.Listener<String>() {
+                                @Override
+                                public void onResponse(String response) {
+                                    // Display the first 500 characters of the response string.
+
+                                    try {
+                                        JSONObject jObject = new JSONObject(response);
+                                        ShowDirections(jObject.getJSONArray("routes").getJSONObject(0).getJSONArray("legs").getJSONObject(0).getJSONArray("steps").toString());
+
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }, new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                        }
+                    });
+                    // Add the request to the RequestQueue.
+                    queue.add(stringRequest);
+                }
+                //RequestPhoto(place);
+            }
+
+            @Override
+            public void onError(@NonNull Status status) {
+                // TODO: Handle the error.
+                Log.i("PLACE", "An error occurred: " + status);
+            }
+        });
+    }
+
+    private void ShowDirections(String dirNoFilter) throws JSONException {
+        String dirs = dirNoFilter.replace("\\/", "/");
+        //JSONObject jObject = new JSONObject(dirs);
+        int lastSearch = dirs.indexOf("html_instructions", 0);
+        LinearLayout mainLayout = (LinearLayout) findViewById(R.id.main_sheet_content);
+        while (lastSearch != -1) {
+            String workingStr = dirs.substring(lastSearch -130, lastSearch + 200);
+            Log.i("DIR", workingStr);
+
+            // Create main layout
+            final LinearLayout newCard = new LinearLayout(this);
+            LinearLayout.LayoutParams params1 = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT );
+            params1.setMargins(4, 4, 4, 4);
+            newCard.setLayoutParams(params1);
+            newCard.setBackgroundColor(getResources().getColor(R.color.colorWhite, getTheme()));
+            newCard.setElevation(4);
+
+
+            // Create image
+            ImageView dirImage = new ImageView(this);
+            LinearLayout.LayoutParams params2 = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            params2.weight = 0.5f;
+            params2.setMargins(15, 15, 15, 15);
+            dirImage.setLayoutParams(params2);
+            if (workingStr.contains("turn-right")) {
+                dirImage.setImageResource(R.drawable.ic_turn_right);
+            } else if (workingStr.contains("turn-left")) {
+                dirImage.setImageResource(R.drawable.ic_turn_left);
+            } else if (workingStr.contains("turn-slight-right")) {
+                dirImage.setImageResource(R.drawable.ic_turn_slight_right);
+            } else if (workingStr.contains("turn-slight-left")) {
+                dirImage.setImageResource(R.drawable.ic_turn_slight_left);
+            } else {
+                dirImage.setImageResource(ic_go_forward);
+            }
+            dirImage.setBackgroundColor(getColor(R.color.transparent));
+            newCard.addView(dirImage);
+
+            // Right Layout
+            final LinearLayout rightLayout = new LinearLayout(this);
+            LinearLayout.LayoutParams params3 = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            params3.weight = 0.5f;
+            params3.setMargins(5, 5, 5, 5);
+            rightLayout.setLayoutParams(params3);
+            rightLayout.setOrientation(LinearLayout.VERTICAL);
+            newCard.addView(rightLayout);
+
+            // Dir text
+            TextView dirText = new TextView(this);
+            LinearLayout.LayoutParams params4 = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            params4.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 175, getResources().getDisplayMetrics());
+            dirText.setLayoutParams(params4);
+            dirText.setText(Html.fromHtml(dirs.substring(20 + lastSearch, dirs.indexOf("\",\"", 20 + lastSearch))));
+            dirText.setTextColor(getColor(R.color.quantum_grey800));
+            dirText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
+            rightLayout.addView(dirText);
+
+            // Meters text
+            TextView metersText = new TextView(this);
+            LinearLayout.LayoutParams params5 = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            metersText.setLayoutParams(params5);
+            metersText.setText(workingStr.substring(workingStr.indexOf("ce\":{\"text\":\"") + 13, workingStr.indexOf("m\",\"value") + 1));
+            metersText.setTextColor(getColor(R.color.quantum_grey600));
+            metersText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 25);
+            rightLayout.addView(metersText);
+
+            mainLayout.addView(newCard);
+
+            lastSearch = dirs.indexOf("html_instructions", lastSearch + 1);
+        }
+    }
+
+    // PHOTO REQUEST
+    private void RequestPhoto(Place myPlace) {
+        // Define a Place ID.
+        String placeId = myPlace.getId();
+
+        // Specify fields. Requests for photos must always have the PHOTO_METADATAS field.
+        final List<Place.Field> fields = Collections.singletonList(Place.Field.PHOTO_METADATAS);
+
+        // Get a Place object (this example uses fetchPlace(), but you can also use findCurrentPlace())
+        final FetchPlaceRequest placeRequest = FetchPlaceRequest.newInstance(placeId, fields);
+
+        placesClient.fetchPlace(placeRequest).addOnSuccessListener((response) -> {
+            final Place place = response.getPlace();
+
+            // Get the photo metadata.
+            final List<PhotoMetadata> metadata = place.getPhotoMetadatas();
+            if (metadata == null || metadata.isEmpty()) {
+                Log.w("PHOTO", "No photo metadata.");
+                return;
+            }
+            final PhotoMetadata photoMetadata = metadata.get(0);
+
+            // Get the attribution text.
+            final String attributions = photoMetadata.getAttributions();
+
+            // Create a FetchPhotoRequest.
+            final FetchPhotoRequest photoRequest = FetchPhotoRequest.builder(photoMetadata)
+                    .setMaxWidth(500) // Optional.
+                    .setMaxHeight(300) // Optional.
+                    .build();
+            placesClient.fetchPhoto(photoRequest).addOnSuccessListener((fetchPhotoResponse) -> {
+                Bitmap bitmap = fetchPhotoResponse.getBitmap();
+                adapter.replaceImage(bitmap);
+            }).addOnFailureListener((exception) -> {
+                if (exception instanceof ApiException) {
+                    final ApiException apiException = (ApiException) exception;
+                    Log.e("PHOTO", "Place not found: " + exception.getMessage());
+                    final int statusCode = apiException.getStatusCode();
+                    // TODO: Handle error with given status code.
+                }
+            });
+        });
     }
 
     private void setViewTrackPanelNotClickable() {
@@ -231,7 +466,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void showMyLocation() {
-        final double DISTANCE_TO_CENTER = 0.005;
+        final double DISTANCE_TO_CENTER = 0.00;
 
         LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         String locationProvider = GoogleMapUtils.getEnabledLocationProvider(locationManager, this);
@@ -257,10 +492,10 @@ public class MainActivity extends AppCompatActivity
         }
 
         if (myLocation != null) {
-            LatLng latLng = new LatLng(myLocation.getLatitude(), myLocation.getLongitude() - DISTANCE_TO_CENTER);
-            map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13));
+            myLatLng = new LatLng(myLocation.getLatitude(), myLocation.getLongitude() - DISTANCE_TO_CENTER);
+            map.animateCamera(CameraUpdateFactory.newLatLngZoom(myLatLng, 13));
             CameraPosition cameraPosition = new CameraPosition.Builder()
-                    .target(latLng)
+                    .target(myLatLng)
                     .zoom(15)
                     .bearing(90)
                     .tilt(40)
@@ -349,5 +584,12 @@ public class MainActivity extends AppCompatActivity
                 button.setVisibility(enable ? View.VISIBLE : View.INVISIBLE);
             }
         });
+    }
+
+    @Override
+    public void onTaskDone(Object... values) {
+        if (currentPolyline != null)
+            currentPolyline.remove();
+        currentPolyline = map.addPolyline((PolylineOptions) values[0]);
     }
 }

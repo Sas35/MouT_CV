@@ -1,17 +1,13 @@
 package com.The032solutions.MouTCV.Activity.Main;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.solver.widgets.analyzer.Direct;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.content.res.ResourcesCompat;
 import androidx.viewpager.widget.ViewPager;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -55,7 +51,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.libraries.places.api.Places;
@@ -64,10 +60,9 @@ import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.net.FetchPhotoRequest;
 import com.google.android.libraries.places.api.net.FetchPlaceRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
-import com.google.android.libraries.places.widget.Autocomplete;
-import com.google.android.libraries.places.widget.AutocompleteActivity;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.mahc.custombottomsheetbehavior.BottomSheetBehaviorGoogleMapsLike;
 import com.mahc.custombottomsheetbehavior.MergedAppBarLayout;
 import com.mahc.custombottomsheetbehavior.MergedAppBarLayoutBehavior;
@@ -99,6 +94,15 @@ public class MainActivity extends AppCompatActivity
     public static final int REQUEST_ID_ACCESS_COURSE_FINE_LOCATION = 100;
     public static File filesDir;
 
+    public enum AppState {
+        MAIN_BOTTOM_STOP,
+        MAIN_BOTTOM_RUNNING,
+        DIRECTIONS_STOP,
+        DIRECTIONS_RUNNING,
+    }
+
+    AppState appState = AppState.MAIN_BOTTOM_STOP;
+
     int[] mDrawables = {
             R.drawable.ic_play_track,
             R.drawable.ic_play_track,
@@ -115,6 +119,9 @@ public class MainActivity extends AppCompatActivity
     ItemPagerAdapter adapter;
     Polyline currentPolyline;
     LatLng myLatLng;
+
+    BottomSheetBehaviorGoogleMapsLike behaviorMain;
+    BottomSheetBehaviorGoogleMapsLike behaviorDirections;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -143,8 +150,8 @@ public class MainActivity extends AppCompatActivity
          */
         CoordinatorLayout coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinatorlayout);
         View bottomSheet = coordinatorLayout.findViewById(R.id.bottom_sheet);
-        final BottomSheetBehaviorGoogleMapsLike behavior = BottomSheetBehaviorGoogleMapsLike.from(bottomSheet);
-        behavior.addBottomSheetCallback(new BottomSheetBehaviorGoogleMapsLike.BottomSheetCallback() {
+        behaviorMain = BottomSheetBehaviorGoogleMapsLike.from(bottomSheet);
+/*        behavior.addBottomSheetCallback(new BottomSheetBehaviorGoogleMapsLike.BottomSheetCallback() {
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState) {
                 switch (newState) {
@@ -172,15 +179,15 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onSlide(@NonNull View bottomSheet, float slideOffset) {
             }
-        });
+        });*/
 
         MergedAppBarLayout mergedAppBarLayout = findViewById(R.id.mergedappbarlayout);
         MergedAppBarLayoutBehavior mergedAppBarLayoutBehavior = MergedAppBarLayoutBehavior.from(mergedAppBarLayout);
-        mergedAppBarLayoutBehavior.setToolbarTitle("Title Dummy");
+        mergedAppBarLayoutBehavior.setToolbarTitle("Sergio Alcaraz");
         mergedAppBarLayoutBehavior.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                behavior.setState(BottomSheetBehaviorGoogleMapsLike.STATE_ANCHOR_POINT);
+                behaviorMain.setState(BottomSheetBehaviorGoogleMapsLike.STATE_ANCHOR_POINT);
             }
         });
 
@@ -189,8 +196,14 @@ public class MainActivity extends AppCompatActivity
         ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
         viewPager.setAdapter(adapter);
 
-        behavior.setState(BottomSheetBehaviorGoogleMapsLike.STATE_ANCHOR_POINT);
+        behaviorMain.setState(BottomSheetBehaviorGoogleMapsLike.STATE_COLLAPSED);
         //behavior.setCollapsible(false);
+
+        // Directions bottom sheet
+        View bottomSheet2 = coordinatorLayout.findViewById(R.id.bottom_sheet_directions);
+        behaviorDirections = BottomSheetBehaviorGoogleMapsLike.from(bottomSheet2);
+        behaviorDirections.setState(BottomSheetBehaviorGoogleMapsLike.STATE_HIDDEN);
+        behaviorDirections.setPeekHeight(400);
 
         // PLACES
 
@@ -225,7 +238,7 @@ public class MainActivity extends AppCompatActivity
                             "origin=39.477684,-0.346078&destination=39.475951,-0.346827\n" +
                             "&mode=bicycling&key=" + getString(R.string.google_maps_key);*/
 
-                    FetchURL fetchURL = new FetchURL(MainActivity.this);
+                    FetchURL fetchURL = new FetchURL(MainActivity.this, map);
                     fetchURL.execute(url, "bicycling");
 
                     // Instantiate the RequestQueue.
@@ -263,20 +276,66 @@ public class MainActivity extends AppCompatActivity
                 Log.i("PLACE", "An error occurred: " + status);
             }
         });
+
+        FloatingActionButton fabBike = findViewById(R.id.start_bike);
+        fabBike.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (appState == AppState.MAIN_BOTTOM_STOP) {
+                    clickStartTrackButton(view);
+                    fabBike.setImageDrawable(ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_baseline_stop_24));
+                    appState = AppState.MAIN_BOTTOM_RUNNING;
+                } else {
+                    clickStopTrackButton(view);
+                    fabBike.setImageDrawable(ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_baseline_directions_bike_24));
+
+                    appState = AppState.MAIN_BOTTOM_STOP;
+                    behaviorMain.setState(BottomSheetBehaviorGoogleMapsLike.STATE_COLLAPSED);
+                    behaviorDirections.setState(BottomSheetBehaviorGoogleMapsLike.STATE_HIDDEN);
+                }
+            }
+        });
+
+        FloatingActionButton fabDirs = findViewById(R.id.start_directions);
+        fabDirs.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (appState == AppState.DIRECTIONS_STOP) {
+                    clickStartTrackButton(view);
+                    fabDirs.setImageDrawable(ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_baseline_stop_24));
+                    appState = AppState.DIRECTIONS_RUNNING;
+                } else {
+                    clickStopTrackButton(view);
+                    fabDirs.setImageDrawable(ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_baseline_directions_bike_24));
+
+                    appState = AppState.MAIN_BOTTOM_STOP;
+                    behaviorMain.setState(BottomSheetBehaviorGoogleMapsLike.STATE_COLLAPSED);
+                    behaviorDirections.setState(BottomSheetBehaviorGoogleMapsLike.STATE_HIDDEN);
+                }
+            }
+        });
     }
 
     private void ShowDirections(String dirNoFilter) throws JSONException {
         String dirs = dirNoFilter.replace("\\/", "/");
         //JSONObject jObject = new JSONObject(dirs);
-        int lastSearch = dirs.indexOf("html_instructions", 0);
-        LinearLayout mainLayout = (LinearLayout) findViewById(R.id.main_sheet_content);
-        while (lastSearch != -1) {
-            String workingStr = dirs.substring(lastSearch -130, lastSearch + 200);
+        int lastSearchInstr = dirs.indexOf("html_instructions", 0);
+        int lastSearchDist = dirs.indexOf("distance", 0);
+        lastSearchDist = dirs.indexOf("distance", lastSearchDist + 1);
+        LinearLayout mainLayout = (LinearLayout) findViewById(R.id.directions_sheet_content);
+
+        appState = AppState.DIRECTIONS_STOP;
+        behaviorMain.setState(BottomSheetBehaviorGoogleMapsLike.STATE_HIDDEN);
+        behaviorDirections.setState(BottomSheetBehaviorGoogleMapsLike.STATE_COLLAPSED);
+
+        while (lastSearchInstr != -1) {
+            String workingStr = dirs.substring(lastSearchInstr, lastSearchInstr + 200);
             Log.i("DIR", workingStr);
 
             // Create main layout
             final LinearLayout newCard = new LinearLayout(this);
             LinearLayout.LayoutParams params1 = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT );
+            params1.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 115, getResources().getDisplayMetrics());
             params1.setMargins(4, 4, 4, 4);
             newCard.setLayoutParams(params1);
             newCard.setBackgroundColor(getResources().getColor(R.color.colorWhite, getTheme()));
@@ -285,7 +344,7 @@ public class MainActivity extends AppCompatActivity
 
             // Create image
             ImageView dirImage = new ImageView(this);
-            LinearLayout.LayoutParams params2 = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            LinearLayout.LayoutParams params2 = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             params2.weight = 0.5f;
             params2.setMargins(15, 15, 15, 15);
             dirImage.setLayoutParams(params2);
@@ -314,26 +373,27 @@ public class MainActivity extends AppCompatActivity
 
             // Dir text
             TextView dirText = new TextView(this);
-            LinearLayout.LayoutParams params4 = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-            params4.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 175, getResources().getDisplayMetrics());
+            LinearLayout.LayoutParams params4 = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            params4.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 85, getResources().getDisplayMetrics());
             dirText.setLayoutParams(params4);
-            dirText.setText(Html.fromHtml(dirs.substring(20 + lastSearch, dirs.indexOf("\",\"", 20 + lastSearch))));
+            dirText.setText(Html.fromHtml(dirs.substring(20 + lastSearchInstr, dirs.indexOf("\",\"", 20 + lastSearchInstr))));
             dirText.setTextColor(getColor(R.color.quantum_grey800));
-            dirText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
+            dirText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 25);
             rightLayout.addView(dirText);
 
             // Meters text
             TextView metersText = new TextView(this);
             LinearLayout.LayoutParams params5 = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             metersText.setLayoutParams(params5);
-            metersText.setText(workingStr.substring(workingStr.indexOf("ce\":{\"text\":\"") + 13, workingStr.indexOf("m\",\"value") + 1));
+            metersText.setText(dirs.substring(dirs.indexOf("ce\":{\"text\":\"", lastSearchDist) + 13, dirs.indexOf("m\",\"value", lastSearchDist) + 1));
             metersText.setTextColor(getColor(R.color.quantum_grey600));
-            metersText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 25);
+            metersText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
             rightLayout.addView(metersText);
 
             mainLayout.addView(newCard);
 
-            lastSearch = dirs.indexOf("html_instructions", lastSearch + 1);
+            lastSearchInstr = dirs.indexOf("html_instructions", lastSearchInstr + 1);
+            lastSearchDist = dirs.indexOf("distance", lastSearchDist + 1);
         }
     }
 

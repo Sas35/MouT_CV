@@ -12,7 +12,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="@dimen/bottom_sheet_peek_height"
-        android:background="@color/colorPrimary"
+        android:background="@color/colorWhite"
         android:paddingTop="8dp"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
@@ -27,24 +27,16 @@
                 android:id="@+id/bottom_sheet_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Title dummy"
-                android:textColor="@android:color/white"
+                android:text="Sergio Alcaraz"
+                android:textColor="@android:color/black"
                 android:textSize="19sp"/>
 
             <TextView
                 android:id="@+id/text_dummy1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Text dummy 1234 1234"
-                android:textColor="@android:color/white"
-                android:textSize="12sp"
-                android:layout_marginTop="5dp"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Text dummy qwer asdf zxcv"
-                android:textColor="@android:color/white"
+                android:text="42069 kms"
+                android:textColor="@android:color/darker_gray"
                 android:textSize="12sp"
                 android:layout_marginTop="5dp"/>
 
@@ -53,8 +45,8 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="5 min"
-            android:textColor="@android:color/white"
+            android:text="69 ptos"
+            android:textColor="@android:color/darker_gray"
             android:textSize="14sp"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
@@ -71,71 +63,44 @@
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
         android:paddingBottom="12dp"
-        android:background="@drawable/common_google_signin_btn_icon_light_normal_background">
-
-        <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent">
-
-            <ImageButton
-                android:id="@+id/button1"
-                android:layout_width="70dp"
-                android:layout_height="60dp"
-                android:src="@android:drawable/ic_dialog_map"
-                android:layout_centerHorizontal="true"
-                android:background="?attr/selectableItemBackgroundBorderless"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="BUTTON 1"
-                android:textColor="@android:color/black"
-                android:layout_alignParentBottom="true"/>
-        </RelativeLayout>
-
-
+        android:background="@drawable/layout_bg">
         <LinearLayout
-            android:id="@+id/establecimiento_layout_favoritos_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginEnd="20dp"
-            android:layout_marginStart="20dp">
-
-            <ImageButton
-                android:id="@+id/button2"
-                android:layout_width="70dp"
-                android:layout_height="60dp"
-                android:src="@android:drawable/ic_dialog_info"
-                android:layout_centerHorizontal="true"
-                android:background="?attr/selectableItemBackgroundBorderless"/>
-
+            android:orientation="vertical">
             <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Últimos 7 días" />
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="BUTTON 2"
-                android:textColor="@android:color/black"/>
+                android:orientation="horizontal">
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/colorAccent"
+                        android:textSize="15sp"
+                        android:text="25 kms" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/colorAccent"
+                        android:textSize="13sp"
+                        android:text="Media" />
+                </LinearLayout>
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_statistics" />
+            </LinearLayout>
         </LinearLayout>
 
-        <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent">
 
-            <ImageButton
-                android:id="@+id/establecimiento_share_button"
-                android:layout_width="70dp"
-                android:layout_height="60dp"
-                android:src="@android:drawable/ic_menu_share"
-                android:layout_centerHorizontal="true"
-                android:background="?attr/selectableItemBackgroundBorderless"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="BUTTON 3"
-                android:textColor="@android:color/black"
-                android:layout_alignParentBottom="true"/>
-        </RelativeLayout>
     </LinearLayout>
 
     <RelativeLayout

@@ -5,7 +5,10 @@ import android.graphics.Color;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.json.JSONObject;
@@ -16,11 +19,13 @@ import java.util.List;
 
 public class PointsParser extends AsyncTask<String, Integer, List<List<HashMap<String, String>>>> {
     TaskLoadedCallback taskCallback;
-    String directionMode = "driving";
+    String directionMode = "bicycling";
+    GoogleMap map;
 
-    public PointsParser(Context mContext, String directionMode) {
+    public PointsParser(Context mContext, String directionMode, GoogleMap map) {
         this.taskCallback = (TaskLoadedCallback) mContext;
         this.directionMode = directionMode;
+        this.map = map;
     }
 
     // Parsing the data in non-ui thread
@@ -68,6 +73,7 @@ public class PointsParser extends AsyncTask<String, Integer, List<List<HashMap<S
                 points.add(position);
             }
             // Adding all the points in the route to LineOptions
+            zoomRoute(map, points);
             lineOptions.addAll(points);
             if (directionMode.equalsIgnoreCase("walking")) {
                 lineOptions.width(10);
@@ -87,5 +93,25 @@ public class PointsParser extends AsyncTask<String, Integer, List<List<HashMap<S
         } else {
             Log.d("mylog", "without Polylines drawn");
         }
+    }
+
+    /**
+     * Zooms a Route (given a List of LalLng) at the greatest possible zoom level.
+     *
+     * @param googleMap: instance of GoogleMap
+     * @param lstLatLngRoute: list of LatLng forming Route
+     */
+    public void zoomRoute(GoogleMap googleMap, List<LatLng> lstLatLngRoute) {
+
+        if (googleMap == null || lstLatLngRoute == null || lstLatLngRoute.isEmpty()) return;
+
+        LatLngBounds.Builder boundsBuilder = new LatLngBounds.Builder();
+        for (LatLng latLngPoint : lstLatLngRoute)
+            boundsBuilder.include(latLngPoint);
+
+        int routePadding = 100;
+        LatLngBounds latLngBounds = boundsBuilder.build();
+
+        googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, routePadding));
     }
 }

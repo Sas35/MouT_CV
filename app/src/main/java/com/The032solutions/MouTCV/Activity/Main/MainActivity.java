@@ -42,6 +42,17 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.maps.GoogleMap;
@@ -51,7 +62,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.libraries.places.api.Places;
@@ -77,8 +87,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -86,13 +98,14 @@ import java.util.TimerTask;
 import static com.The032solutions.MouTCV.R.drawable.ic_go_forward;
 
 public class MainActivity extends AppCompatActivity
-        implements OnMapReadyCallback, OnMapLoadedCallback, LocationListener, TaskLoadedCallback {
+        implements OnMapReadyCallback, OnMapLoadedCallback, LocationListener, TaskLoadedCallback, OnChartValueSelectedListener {
 
     private GoogleMap map;
     private ProgressDialog loadMapProgressDialog;
 
     public static final int REQUEST_ID_ACCESS_COURSE_FINE_LOCATION = 100;
     public static File filesDir;
+
 
     public enum AppState {
         MAIN_BOTTOM_STOP,
@@ -119,9 +132,14 @@ public class MainActivity extends AppCompatActivity
     ItemPagerAdapter adapter;
     Polyline currentPolyline;
     LatLng myLatLng;
+    List<LatLng> route;
 
     BottomSheetBehaviorGoogleMapsLike behaviorMain;
     BottomSheetBehaviorGoogleMapsLike behaviorDirections;
+    FloatingActionButton fabDirs;
+    FloatingActionButton fabBike;
+
+    int deletedCards = 0;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -134,6 +152,9 @@ public class MainActivity extends AppCompatActivity
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         setViewTrackPanelNotClickable();
+
+        View trackPanel = findViewById(R.id.track_panel);
+        trackPanel.setVisibility(View.GONE);
 
         filesDir = getFilesDir();
         CurrentUserData.initializeUserData();
@@ -151,27 +172,32 @@ public class MainActivity extends AppCompatActivity
         CoordinatorLayout coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinatorlayout);
         View bottomSheet = coordinatorLayout.findViewById(R.id.bottom_sheet);
         behaviorMain = BottomSheetBehaviorGoogleMapsLike.from(bottomSheet);
-/*        behavior.addBottomSheetCallback(new BottomSheetBehaviorGoogleMapsLike.BottomSheetCallback() {
+        behaviorMain.addBottomSheetCallback(new BottomSheetBehaviorGoogleMapsLike.BottomSheetCallback() {
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState) {
                 switch (newState) {
                     case BottomSheetBehaviorGoogleMapsLike.STATE_COLLAPSED:
                         Log.d("bottomsheet-", "STATE_COLLAPSED");
+                        fabBike.setVisibility(View.VISIBLE);
                         break;
                     case BottomSheetBehaviorGoogleMapsLike.STATE_DRAGGING:
                         Log.d("bottomsheet-", "STATE_DRAGGING");
+                        fabBike.setVisibility(View.VISIBLE);
                         break;
                     case BottomSheetBehaviorGoogleMapsLike.STATE_EXPANDED:
                         Log.d("bottomsheet-", "STATE_EXPANDED");
+                        fabBike.setVisibility(View.VISIBLE);
                         break;
                     case BottomSheetBehaviorGoogleMapsLike.STATE_ANCHOR_POINT:
                         Log.d("bottomsheet-", "STATE_ANCHOR_POINT");
+                        fabBike.setVisibility(View.VISIBLE);
                         break;
                     case BottomSheetBehaviorGoogleMapsLike.STATE_HIDDEN:
                         Log.d("bottomsheet-", "STATE_HIDDEN");
                         break;
                     default:
                         Log.d("bottomsheet-", "STATE_SETTLING");
+                        fabBike.setVisibility(View.VISIBLE);
                         break;
                 }
             }
@@ -179,15 +205,15 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onSlide(@NonNull View bottomSheet, float slideOffset) {
             }
-        });*/
+        });
 
         MergedAppBarLayout mergedAppBarLayout = findViewById(R.id.mergedappbarlayout);
         MergedAppBarLayoutBehavior mergedAppBarLayoutBehavior = MergedAppBarLayoutBehavior.from(mergedAppBarLayout);
-        mergedAppBarLayoutBehavior.setToolbarTitle("Sergio Alcaraz");
+        mergedAppBarLayoutBehavior.setToolbarTitle("MouT");
         mergedAppBarLayoutBehavior.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                behaviorMain.setState(BottomSheetBehaviorGoogleMapsLike.STATE_ANCHOR_POINT);
+                //behaviorMain.setState(BottomSheetBehaviorGoogleMapsLike.STATE_ANCHOR_POINT);
             }
         });
 
@@ -195,13 +221,49 @@ public class MainActivity extends AppCompatActivity
         adapter = new ItemPagerAdapter(this,mDrawables);
         ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
         viewPager.setAdapter(adapter);
+        viewPager.setVisibility(View.GONE);
 
         behaviorMain.setState(BottomSheetBehaviorGoogleMapsLike.STATE_COLLAPSED);
+        behaviorMain.setPeekHeight(400);
         //behavior.setCollapsible(false);
 
         // Directions bottom sheet
         View bottomSheet2 = coordinatorLayout.findViewById(R.id.bottom_sheet_directions);
         behaviorDirections = BottomSheetBehaviorGoogleMapsLike.from(bottomSheet2);
+        behaviorDirections.addBottomSheetCallback(new BottomSheetBehaviorGoogleMapsLike.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                switch (newState) {
+                    case BottomSheetBehaviorGoogleMapsLike.STATE_COLLAPSED:
+                        Log.d("bottomsheet-", "STATE_COLLAPSED");
+                        fabDirs.setVisibility(View.VISIBLE);
+                        break;
+                    case BottomSheetBehaviorGoogleMapsLike.STATE_DRAGGING:
+                        Log.d("bottomsheet-", "STATE_DRAGGING");
+                        fabDirs.setVisibility(View.VISIBLE);
+                        break;
+                    case BottomSheetBehaviorGoogleMapsLike.STATE_EXPANDED:
+                        Log.d("bottomsheet-", "STATE_EXPANDED");
+                        fabDirs.setVisibility(View.VISIBLE);
+                        break;
+                    case BottomSheetBehaviorGoogleMapsLike.STATE_ANCHOR_POINT:
+                        Log.d("bottomsheet-", "STATE_ANCHOR_POINT");
+                        fabDirs.setVisibility(View.VISIBLE);
+                        break;
+                    case BottomSheetBehaviorGoogleMapsLike.STATE_HIDDEN:
+                        Log.d("bottomsheet-", "STATE_HIDDEN");
+                        break;
+                    default:
+                        Log.d("bottomsheet-", "STATE_SETTLING");
+                        fabDirs.setVisibility(View.VISIBLE);
+                        break;
+                }
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+            }
+        });
         behaviorDirections.setState(BottomSheetBehaviorGoogleMapsLike.STATE_HIDDEN);
         behaviorDirections.setPeekHeight(400);
 
@@ -234,9 +296,10 @@ public class MainActivity extends AppCompatActivity
                             "origin=" + myLatLng.latitude + "," + myLatLng.longitude +
                             "&destination=place_id:" + place.getId() + "\n" +
                             "&mode=bicycling&language=es&key=" + getString(R.string.google_maps_key);
-/*                    url = "https://maps.googleapis.com/maps/api/directions/json?\n" +
-                            "origin=39.477684,-0.346078&destination=39.475951,-0.346827\n" +
-                            "&mode=bicycling&key=" + getString(R.string.google_maps_key);*/
+                    url = "https://maps.googleapis.com/maps/api/directions/json?\n" +
+                            "origin=39.47035954480136,-0.3348893907690009" +
+                            "&destination=39.4798101405679, -0.34581230690110903&waypoints=via:39.47641279586022%2C-0.3339372156612928" +
+                            "&mode=bicycling&language=es&key=" + getString(R.string.google_maps_key);
 
                     FetchURL fetchURL = new FetchURL(MainActivity.this, map);
                     fetchURL.execute(url, "bicycling");
@@ -277,7 +340,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        FloatingActionButton fabBike = findViewById(R.id.start_bike);
+        fabBike = findViewById(R.id.start_bike);
         fabBike.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -296,7 +359,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        FloatingActionButton fabDirs = findViewById(R.id.start_directions);
+        fabDirs = findViewById(R.id.start_directions);
         fabDirs.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -314,6 +377,79 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         });
+
+        SetupData();
+    }
+
+    private void SetupData() {
+        // Data
+        float[] kms = {1.23f, 3.54f, 2.38f, 0.0f, 1.53f, 3.12f, 4.34f};
+        float[] days = {1f, 2f, 3f, 4f, 5f, 6f, 7f};
+
+        // Info
+        float meanKmsF = 0.0f;
+        for (float km : kms) {
+            meanKmsF += (km / 7.0f);
+        }
+        TextView meanKms = (TextView) findViewById(R.id.meanKms);
+        meanKms.setText(String.format("%.2f", meanKmsF) + " kms");
+
+        TextView emisionesTxt = (TextView) findViewById(R.id.emisionesCO2);
+        emisionesTxt.setText(String.format("%.2f",(meanKmsF * 7 * 23)) + "g");
+
+        // Charts
+/*        BarChart barChart = (BarChart) findViewById(R.id.chartKms);
+        barChart.setDescription(null);
+        barChart.setDrawGridBackground(false);
+        barChart.setDrawValueAboveBar(true);
+        barChart.getAxisLeft().setEnabled(false);
+        barChart.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
+        barChart.getLegend().setEnabled(false);
+        barChart.setScaleEnabled(false);
+
+        List<BarEntry> entries = new ArrayList<BarEntry>();
+        for (int i = 0; i < kms.length; i++) {
+            // turn your data into Entry objects
+            entries.add(new BarEntry(days[i], kms[i]));
+        }
+
+        BarDataSet dataSet = new BarDataSet(entries, "Label"); // add entries to dataset
+        //dataSet.setColors(new int[] {Color.BLUE, Color.BLUE, R.color.quantum_black_text, R.color.quantum_googgreen, R.color.colorAccent, R.color.colorAccent, R.color.colorAccent});
+        dataSet.setColor(Color.parseColor("#91d290"));
+        dataSet.setValueTextColor(Color.parseColor("#91d290"));
+
+        BarData barData = new BarData(dataSet);
+        barChart.setData(barData);
+        barChart.invalidate(); // refresh*/
+
+        // in this example, a LineChart is initialized from xml
+        /*LineChart chart = (LineChart) findViewById(R.id.chart);
+
+        List<Entry> entries2 = new ArrayList<Entry>();
+        for (int i = 0; i < kms.length; i++) {
+            // turn your data into Entry objects
+            entries2.add(new Entry(days[i], kms[i]));
+        }
+
+        LineDataSet dataSet2 = new LineDataSet(entries2, "Label"); // add entries to dataset
+        dataSet2.setColor(R.color.colorAccent);
+        dataSet2.setValueTextColor(R.color.colorAccent);
+
+        LineData lineData = new LineData(dataSet2);
+        chart.setData(lineData);
+        chart.invalidate(); // refresh
+
+        chart.setOnChartValueSelectedListener(this);*/
+    }
+
+    @Override
+    public void onValueSelected(Entry e, Highlight h) {
+
+    }
+
+    @Override
+    public void onNothingSelected() {
+
     }
 
     private void ShowDirections(String dirNoFilter) throws JSONException {
@@ -327,11 +463,13 @@ public class MainActivity extends AppCompatActivity
         appState = AppState.DIRECTIONS_STOP;
         behaviorMain.setState(BottomSheetBehaviorGoogleMapsLike.STATE_HIDDEN);
         behaviorDirections.setState(BottomSheetBehaviorGoogleMapsLike.STATE_COLLAPSED);
+        fabDirs.setVisibility(View.VISIBLE);
+        int counter = 0;
+        deletedCards = 0;
+        route = new ArrayList<>();
 
         while (lastSearchInstr != -1) {
-            String workingStr = dirs.substring(lastSearchInstr, lastSearchInstr + 200);
-            Log.i("DIR", workingStr);
-
+            String workingStr = dirs.substring(lastSearchInstr -100, lastSearchInstr + 200);
             // Create main layout
             final LinearLayout newCard = new LinearLayout(this);
             LinearLayout.LayoutParams params1 = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT );
@@ -395,6 +533,12 @@ public class MainActivity extends AppCompatActivity
             lastSearchInstr = dirs.indexOf("html_instructions", lastSearchInstr + 1);
             lastSearchDist = dirs.indexOf("distance", lastSearchDist + 1);
         }
+        // Fill
+        LinearLayout fill = new LinearLayout(this);
+        LinearLayout.LayoutParams params6 = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        params6.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 700, getResources().getDisplayMetrics());
+        fill.setBackgroundColor(Color.WHITE);
+        mainLayout.addView(fill);
     }
 
     // PHOTO REQUEST
@@ -553,6 +697,7 @@ public class MainActivity extends AppCompatActivity
 
         if (myLocation != null) {
             myLatLng = new LatLng(myLocation.getLatitude(), myLocation.getLongitude() - DISTANCE_TO_CENTER);
+            myLatLng = new LatLng(myLocation.getLatitude(), myLocation.getLongitude() - DISTANCE_TO_CENTER);
             map.animateCamera(CameraUpdateFactory.newLatLngZoom(myLatLng, 13));
             CameraPosition cameraPosition = new CameraPosition.Builder()
                     .target(myLatLng)
@@ -565,13 +710,20 @@ public class MainActivity extends AppCompatActivity
             Toast.makeText(this, "Location not found", Toast.LENGTH_LONG).show();
             Log.i("MapInfo", "Location not found");
         }
-
     }
 
 
     @Override
     public void onLocationChanged(final Location location) {
-        CurrentTrackView.newPosition(location, map);
+        if (CurrentTrackView.newPosition(location, map)) {
+            /*route.remove(0);
+            int id = getResources().getIdentifier("dir" + deletedCards, "id", getPackageName());
+            View cardToDelete = findViewById(STARTING_ID_FOR_CARDS + deletedCards);
+            cardToDelete.setVisibility(View.GONE);
+            deletedCards++;
+
+            cardToDelete = findViewById(STARTING_ID_FOR_CARDS + deletedCards);*/
+        }
     }
 
     @Override

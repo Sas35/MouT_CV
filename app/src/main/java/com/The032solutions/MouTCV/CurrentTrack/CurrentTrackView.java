@@ -3,6 +3,7 @@ package com.The032solutions.MouTCV.CurrentTrack;
 import android.content.Context;
 import android.graphics.Color;
 import android.location.Location;
+import android.util.Log;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -13,6 +14,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.The032solutions.MouTCV.Activity.Main.MainActivity;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -33,6 +35,8 @@ public class CurrentTrackView {
     private static ImageButton stopButton;
     private static ImageButton pauseButton;
     private static ImageButton startButton;
+
+    private static int ticksFarther = 0;
 
     public static void initializeTrack(final Context context,
                                        final TextView timeTextView,
@@ -55,6 +59,7 @@ public class CurrentTrackView {
 
     public static void startTrack() {
         if (trackState != CurrentTrackState.START) {
+            ticksFarther = 0;
             setTrackState(CurrentTrackState.START);
         }
     }
@@ -113,7 +118,7 @@ public class CurrentTrackView {
         }
     }
 
-    public static void newPosition(final Location newPosition, final GoogleMap map) {
+    public static boolean newPosition(final Location newPosition, final GoogleMap map) {
         if (trackState == CurrentTrackState.START) {
             Location lastPosition = currentTrackData.getLastPosition();
             currentTrackData.newPosition(newPosition);
@@ -121,6 +126,8 @@ public class CurrentTrackView {
                 drawRoute(map, lastPosition, newPosition);
             }
         }
+
+        return false;
     }
 
     private static void drawRoute(final GoogleMap map,

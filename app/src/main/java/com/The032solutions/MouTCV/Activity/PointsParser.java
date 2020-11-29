@@ -109,7 +109,7 @@ public class PointsParser extends AsyncTask<String, Integer, List<List<HashMap<S
         for (LatLng latLngPoint : lstLatLngRoute)
             boundsBuilder.include(latLngPoint);
 
-        int routePadding = 100;
+        int routePadding = 300;
         LatLngBounds latLngBounds = boundsBuilder.build();
 
         googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, routePadding));

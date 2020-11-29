@@ -35,7 +35,7 @@
                 android:id="@+id/text_dummy1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="42069 kms"
+                android:text="144 Km totales"
                 android:textColor="@android:color/darker_gray"
                 android:textSize="12sp"
                 android:layout_marginTop="5dp"/>
@@ -45,7 +45,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="69 ptos"
+            android:text="32 ptos"
             android:textColor="@android:color/darker_gray"
             android:textSize="14sp"
             android:layout_alignParentEnd="true"
@@ -53,7 +53,6 @@
             android:paddingTop="8dp"/>
 
     </RelativeLayout>
-
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -63,47 +62,358 @@
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
         android:paddingBottom="12dp"
+        android:layout_margin="4dp"
+        android:elevation="4dp"
         android:background="@drawable/layout_bg">
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Últimos 7 días" />
+                android:textStyle="bold"
+                android:text="Racha de días consecutivos" />
             <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
                 android:orientation="horizontal">
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="center"
                     android:orientation="vertical">
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:textColor="@color/colorAccent"
+                        android:textStyle="bold"
+                        android:textSize="15sp"
+                        android:text="3/7" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/colorAccent"
+                        android:textStyle="bold"
+                        android:textSize="13sp"
+                        android:text="Conseguidos" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:orientation="horizontal">
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:paddingStart="20dp"
+                        android:layout_margin="4dp"
+                        android:src="@drawable/ic_baseline_check_circle_outline_24"/>
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_margin="4dp"
+                        android:src="@drawable/ic_baseline_check_circle_outline_24"/>
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_margin="4dp"
+                        android:src="@drawable/ic_baseline_check_circle_outline_24"/>
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_margin="4dp"
+                        android:src="@drawable/ic_baseline_radio_button_unchecked_24"/>
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_margin="4dp"
+                        android:src="@drawable/ic_baseline_radio_button_unchecked_24"/>
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_margin="4dp"
+                        android:src="@drawable/ic_baseline_radio_button_unchecked_24"/>
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_margin="4dp"
+                        android:src="@drawable/ic_baseline_radio_button_unchecked_24"/>
+
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="12dp"
+        android:layout_margin="4dp"
+        android:elevation="4dp"
+        android:background="@drawable/layout_bg">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:text="Últimos 7 días" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:orientation="horizontal">
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/meanKms"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="#91d290"
+                        android:textStyle="bold"
                         android:textSize="15sp"
                         android:text="25 kms" />
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/colorAccent"
+                        android:textColor="#91d290"
+                        android:textStyle="bold"
                         android:textSize="13sp"
                         android:text="Media" />
                 </LinearLayout>
                 <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/ic_statistics" />
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="20dp"
+                    android:src="@drawable/ic_greenchart"/>
+<!--                <com.github.mikephil.charting.charts.BarChart
+                    android:id="@+id/chartKms"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />-->
             </LinearLayout>
         </LinearLayout>
 
 
     </LinearLayout>
 
-    <RelativeLayout
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="12dp"
+        android:layout_margin="4dp"
+        android:elevation="4dp"
+        android:background="@drawable/layout_bg">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:text="Has evitado un total de" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:orientation="horizontal">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/emisionesCO2"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textAlignment="center"
+                        android:textColor="#f98cb6"
+                        android:textStyle="bold"
+                        android:textSize="15sp"
+                        android:text="1231" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textAlignment="center"
+                        android:textColor="#f98cb6"
+                        android:textStyle="bold"
+                        android:textSize="13sp"
+                        android:text="en emisiones de CO2" />
+                </LinearLayout>
+
+<!--                <com.github.mikephil.charting.charts.LineChart
+                    android:id="@+id/chart"
+                    android:layout_width="match_parent"
+                    android:layout_height="100dp" />-->
+
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="12dp"
+        android:layout_margin="4dp"
+        android:elevation="4dp"
+        android:background="@drawable/layout_bg">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:text="Recompensas" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:orientation="horizontal">
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="#a589c1"
+                        android:textStyle="bold"
+                        android:textSize="15sp"
+                        android:text="32/40" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="#a589c1"
+                        android:textStyle="bold"
+                        android:textSize="13sp"
+                        android:text="Billete de\nbus" />
+            </LinearLayout>
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:padding="15dp"
+                    android:layout_margin="4dp"
+                    android:src="@drawable/ic_purplebar95"/>
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="10dp"
+                    android:layout_gravity="center"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="#a589c1"
+                        android:textStyle="bold"
+                        android:textSize="15sp"
+                        android:text="32/50" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="#a589c1"
+                        android:textStyle="bold"
+                        android:textSize="13sp"
+                        android:text="Entrada al\nteatro" />
+                </LinearLayout>
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:padding="20dp"
+                    android:layout_margin="4dp"
+                    android:src="@drawable/ic_purplebar70"/>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:orientation="horizontal">
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="#a589c1"
+                        android:textStyle="bold"
+                        android:textSize="15sp"
+                        android:text="32/80" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="#a589c1"
+                        android:textStyle="bold"
+                        android:textSize="13sp"
+                        android:text="Descuento\nal abono" />
+                </LinearLayout>
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:padding="10dp"
+                    android:layout_margin="4dp"
+                    android:src="@drawable/ic_purplebar"/>
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="10dp"
+                    android:layout_gravity="center"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="#a589c1"
+                        android:textStyle="bold"
+                        android:textSize="15sp"
+                        android:text="32/400" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="#a589c1"
+                        android:textStyle="bold"
+                        android:textSize="13sp"
+                        android:text="Casco del\nayuntamiento" />
+                </LinearLayout>
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:padding="10dp"
+                    android:layout_margin="4dp"
+                    android:src="@drawable/ic_purplebar5"/>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+
+    <!--<RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/common_google_signin_btn_icon_light_normal_background">
@@ -212,5 +522,5 @@
             android:text="Your remaining content here"
             android:textColor="@android:color/white" />
 
-    </FrameLayout>
+    </FrameLayout>-->
 </LinearLayout>

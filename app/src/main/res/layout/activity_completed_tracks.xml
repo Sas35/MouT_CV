@@ -32,7 +32,7 @@
         android:gravity="center"
         android:text="@string/completedTracks"
         android:textColor="@color/colorDark"
-        android:textSize="30sp"
+        android:textSize="23sp"
         android:textStyle="bold"
         android:textAlignment="textEnd"
         app:layout_constraintBottom_toTopOf="@+id/tracksList"

@@ -70,9 +70,9 @@ public class TracksViewAdapter
     }
 
     private void setSpeedValue(final TrackViewHolder holder, final Track trackData) {
-        String speedString = new DecimalFormat("00.00")
-                .format(trackData.avgSpeed);
-        holder.speedValue.setText(speedString);
+/*        String speedString = new DecimalFormat("00.00")
+                .format(trackData.avgSpeed);*/
+        holder.speedValue.setText(String.valueOf((int)trackData.distance / 500));
     }
 
     private void setTimeValue(final TrackViewHolder holder, final Track trackData) {
@@ -87,7 +87,8 @@ public class TracksViewAdapter
     }
 
     private void setDateValue(final TrackViewHolder holder, final Track trackData) {
-        Date trackDate = new Date(trackData.dateTime);
+        Date trackDate = new Date();
+        trackDate.setTime(trackData.time);
         Date currentDate = new Date();
         SimpleDateFormat formatter;
         if (trackDate.getYear() < currentDate.getYear()) {

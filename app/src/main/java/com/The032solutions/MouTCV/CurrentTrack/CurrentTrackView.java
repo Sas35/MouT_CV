@@ -7,6 +7,8 @@ import android.util.Log;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Polyline;
@@ -57,10 +59,13 @@ public class CurrentTrackView {
         setTrackState(CurrentTrackState.STOP);
     }
 
-    public static void startTrack() {
+    public static void startTrack(final LatLng myPosition, final GoogleMap map) {
         if (trackState != CurrentTrackState.START) {
             ticksFarther = 0;
             setTrackState(CurrentTrackState.START);
+            if (myPosition != null && map != null) {
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(myPosition, map.getMaxZoomLevel() - 4));
+            }
         }
     }
 
@@ -125,6 +130,7 @@ public class CurrentTrackView {
             if (lastPosition != null) {
                 drawRoute(map, lastPosition, newPosition);
             }
+            map.animateCamera(CameraUpdateFactory.newLatLng(new LatLng(newPosition.getLatitude(), newPosition.getLongitude())));
         }
 
         return false;

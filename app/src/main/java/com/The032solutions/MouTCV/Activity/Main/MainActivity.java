@@ -104,6 +104,7 @@ public class MainActivity extends AppCompatActivity
     private ProgressDialog loadMapProgressDialog;
 
     public static final int REQUEST_ID_ACCESS_COURSE_FINE_LOCATION = 100;
+    final double DISTANCE_TO_CENTER = 0.001;
     public static File filesDir;
 
 
@@ -295,10 +296,6 @@ public class MainActivity extends AppCompatActivity
                     url = "https://maps.googleapis.com/maps/api/directions/json?\n" +
                             "origin=" + myLatLng.latitude + "," + myLatLng.longitude +
                             "&destination=place_id:" + place.getId() + "\n" +
-                            "&mode=bicycling&language=es&key=" + getString(R.string.google_maps_key);
-                    url = "https://maps.googleapis.com/maps/api/directions/json?\n" +
-                            "origin=39.47035954480136,-0.3348893907690009" +
-                            "&destination=39.4798101405679, -0.34581230690110903&waypoints=via:39.47641279586022%2C-0.3339372156612928" +
                             "&mode=bicycling&language=es&key=" + getString(R.string.google_maps_key);
 
                     FetchURL fetchURL = new FetchURL(MainActivity.this, map);
@@ -670,8 +667,6 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void showMyLocation() {
-        final double DISTANCE_TO_CENTER = 0.00;
-
         LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         String locationProvider = GoogleMapUtils.getEnabledLocationProvider(locationManager, this);
         if (locationProvider == null) {
@@ -715,7 +710,8 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onLocationChanged(final Location location) {
-        if (CurrentTrackView.newPosition(location, map)) {
+        CurrentTrackView.newPosition(location, map);
+        myLatLng = new LatLng(location.getLatitude(), location.getLongitude() - DISTANCE_TO_CENTER);
             /*route.remove(0);
             int id = getResources().getIdentifier("dir" + deletedCards, "id", getPackageName());
             View cardToDelete = findViewById(STARTING_ID_FOR_CARDS + deletedCards);
@@ -723,7 +719,6 @@ public class MainActivity extends AppCompatActivity
             deletedCards++;
 
             cardToDelete = findViewById(STARTING_ID_FOR_CARDS + deletedCards);*/
-        }
     }
 
     @Override
@@ -739,7 +734,7 @@ public class MainActivity extends AppCompatActivity
     public void clickStartTrackButton(final View view) {
         final Animation animScale = AnimationUtils.loadAnimation(this, R.anim.scale_track_button);
         view.startAnimation(animScale);
-        CurrentTrackView.startTrack();
+        CurrentTrackView.startTrack(myLatLng, map);
     }
 
     public void clickPauseTrackButton(final View view) {

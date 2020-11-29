@@ -20,9 +20,9 @@
     <string name="points_empty_example">7</string>
     <string name="date_empty_example">15 July - 16:20</string>
     <string name="time_empty_example">00:21:10</string>
-    <string name="stopTrackDialogMessage">Do you want to complete the training?</string>
-    <string name="stopTrackDialogPositiveButton">Resume</string>
-    <string name="stopTrackDialogNegativeButton">Complete</string>
+    <string name="stopTrackDialogMessage">¿Quieres finalizar el recorrido?</string>
+    <string name="stopTrackDialogPositiveButton">Volver</string>
+    <string name="stopTrackDialogNegativeButton">Finalizar</string>
     <string name="completedTracks">Desplazamientos completados</string>
     <string name="password">Password</string>
     <string name="email">Email</string>
